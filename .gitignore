@@ -1,0 +1,68 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+
+# =========================
+# Virtual environments
+# =========================
+my_env/
+venv/
+.venv/
+env/
+
+# =========================
+# IDE / editor
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Testing / caches
+# =========================
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Secrets / credentials
+# =========================
+*secret*
+*credentials*
+
+# =========================
+# API / local caches
+# =========================
+spotify_id_cache.json
+musicbrainz_cache.json
+
+# =========================
+# Large datasets
+# =========================
+datasets/spotify_dataset.csv
+datasets/spotify_tracks_dataset.csv
+
+# =========================
+# Generated Python files
+# =========================
+*.pyc
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+*.log

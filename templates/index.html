@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NextTrack — Live Demo</title>
+<style>
+  :root {
+    --bg: #2163b3;
+    --card: #181b22;
+    --border: #2a2e38;
+    --text: #f1f2f4;
+    --muted: #b0b3ba;
+    --accent: #6c8cff;
+    --accent2: #54d6a0;
+    --warn: #ff7a7a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 16px 64px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-bottom: 28px; font-size: 14px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+
+  .tracks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .track-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .track-option.selected { border-color: var(--accent); background: rgba(108,140,255,0.12); }
+  .track-option .artist { color: var(--muted); font-size: 12px; }
+
+  .controls-row { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 6px; }
+  .control { flex: 1; min-width: 160px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  select {
+    width: 100%; padding: 8px; border-radius: 8px;
+    background: #11141a; color: var(--text); border: 1px solid var(--border);
+  }
+  input[type="range"] { width: 100%; }
+  .range-value { font-size: 12px; color: var(--accent); float: right; }
+
+  button#go {
+    margin-top: 22px;
+    width: 100%;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button#go:disabled { opacity: .5; cursor: not-allowed; }
+
+  #result-card { display: none; }
+  .result-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .track-title { font-size: 20px; font-weight: 700; }
+  .track-artist { color: var(--muted); font-size: 14px; }
+  .score-badge {
+    font-size: 22px; font-weight: 700; color: var(--accent2);
+  }
+  .reason {
+    margin: 14px 0 18px;
+    font-size: 14px;
+    color: var(--text);
+    background: #11141a;
+    border-radius: 8px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .breakdown-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+  .breakdown-label { width: 80px; color: var(--muted); }
+  .bar-track { flex: 1; height: 10px; background: #11141a; border-radius: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); }
+  .breakdown-pct { width: 38px; text-align: right; color: var(--muted); }
+
+  .tags-row { margin-top: 16px; font-size: 12px; color: var(--muted); }
+  .tag-chip {
+    display: inline-block; background: #11141a; border: 1px solid var(--border);
+    border-radius: 999px; padding: 3px 10px; margin: 2px 4px 2px 0; font-size: 12px;
+  }
+  .source-chip {
+    display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+  .source-musicbrainz { background: rgba(84,214,160,0.18); color: var(--accent2); }
+  .source-fallback { background: rgba(255,122,122,0.18); color: var(--warn); }
+
+  #error-box {
+    display: none;
+    border: 1px solid var(--warn);
+    color: var(--warn);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .link-button {
+    background: none; border: none; color: var(--accent); font-size: 12px;
+    text-decoration: underline; cursor: pointer; padding: 0; margin-left: 8px;
+  }
+  .help-icon {
+    display: inline-block; width: 14px; height: 14px; line-height: 14px;
+    border-radius: 50%; background: var(--border); color: var(--muted);
+    font-size: 10px; text-align: center; cursor: help; margin-left: 4px;
+  }
+
+  /* Accessibility: visible focus states for keyboard users */
+  .track-option:focus-visible,
+  select:focus-visible,
+  input[type="range"]:focus-visible,
+  button#go:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>NextTrack — live demo</h1>
+  <div class="subtitle">Stateless hybrid scorer + novelty re-ranking, running on real MusicBrainz tag data.</div>
+
+  <div id="error-box" role="alert" aria-live="assertive"></div>
+
+  <div class="card">
+    <h2 id="tracks-heading">1. Pick your recent tracks (1–5)</h2>
+    <input
+      type="text"
+      id="track-search"
+      placeholder="Search songs or artists…"
+      aria-label="Search songs or artists"
+      style="width:100%; padding:8px 10px; margin-bottom:10px; border-radius:8px;
+             background:#11141a; color:var(--text); border:1px solid var(--border); font-size:13px;"
+    >
+    <div class="tracks-grid" id="tracks-grid" role="listbox" aria-multiselectable="true" aria-labelledby="tracks-heading">Loading tracks…</div>
+    <div class="hint" id="search-hint" style="display:none;">
+      Showing search results. <button type="button" id="clear-search" class="link-button">Clear search</button>
+    </div>
+    <div class="hint">These act as the listening history sent with each API request — nothing is stored between requests.
+      <button type="button" id="clear-selections" class="link-button">Clear selections</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. Set the context</h2>
+    <div class="controls-row">
+      <div class="control">
+        <label for="mood">Mood</label>
+        <select id="mood">
+          <option value="energetic">Energetic</option>
+          <option value="happy">Happy</option>
+          <option value="calm">Calm</option>
+          <option value="melancholy">Melancholy</option>
+          <option value="neutral" selected>Neutral</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="energy">Energy <span class="range-value" id="energy-val">0.50</span></label>
+        <input type="range" id="energy" min="0" max="1" step="0.05" value="0.5">
+      </div>
+      <div class="control">
+        <label for="novelty">Novelty (familiar → discover) <span class="range-value" id="novelty-val">0.30</span></label>
+        <input type="range" id="novelty" min="0" max="1" step="0.05" value="0.3">
+      </div>
+
+      <div class="control">
+        <label for="diversity">
+          Diversity (relevance → variety)<span class="range-value" id="diversity-val">0.30</span></label>
+        <input type="range" id="diversity" min="0" max="1" step="0.05" value="0.3">
+      </div>
+    </div>
+    <button id="go">Get next track</button>
+  </div>
+
+  <div class="card" id="result-card" aria-live="polite">
+    <h2>Result</h2>
+    <div class="result-header">
+      <div>
+        <div class="track-title" id="r-title"></div>
+        <div class="track-artist" id="r-artist"></div>
+      </div>
+      <div class="score-badge" id="r-score"></div>
+    </div>
+    <div class="reason" id="r-reason"></div>
+
+    <div id="r-breakdown"></div>
+
+    <div class="tags-row">
+      Tags: <span id="r-tags"></span>
+      <span class="source-chip" id="r-source"></span>
+    </div>
+
+    <div id="r-player" style="margin-top: 16px;"></div>
+  </div>
+
+  <div class="card" id="alternatives-card" style="display:none;">
+    <h2>More like this</h2>
+    <div id="alternatives-list"></div>
+  </div>
+</div>
+
+<script>
+const selected = new Set();
+const MAX_SEEDS = 5;
+let allTracks = [];
+ 
+async function loadTracks() {
+  const res = await fetch("/tracks");
+  allTracks = await res.json();
+  renderTracks(allTracks);
+}
+ 
+function renderTracks(list) {
+  const grid = document.getElementById("tracks-grid");
+  grid.innerHTML = "";
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="hint">No tracks match your search.</div>';
+    return;
+  }
+  list.forEach(t => {
+    const el = document.createElement("div");
+    el.className = "track-option" + (selected.has(t.id) ? " selected" : "");
+    el.dataset.id = t.id;
+    el.setAttribute("role", "option");
+    el.setAttribute("tabindex", "0");
+    el.setAttribute("aria-selected", selected.has(t.id) ? "true" : "false");
+    el.innerHTML = `<span>${t.title}</span><span class="artist">— ${t.artist}</span>`;
+    el.addEventListener("click", () => toggleTrack(el, t.id));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleTrack(el, t.id);
+      }
+    });
+    grid.appendChild(el);
+  });
+}
+
+function toggleTrack(el, id) {
+  if (selected.has(id)) {
+    selected.delete(id);
+    el.classList.remove("selected");
+    el.setAttribute("aria-selected", "false");
+  } else {
+    if (selected.size >= MAX_SEEDS) {
+      showError(`You can pick at most ${MAX_SEEDS} seed tracks.`);
+      return;
+    }
+    selected.add(id);
+    el.classList.add("selected");
+    el.setAttribute("aria-selected", "true");
+  }
+}
+
+function showError(msg) {
+  const box = document.getElementById("error-box");
+  box.textContent = msg;
+  box.style.display = "block";
+}
+function hideError() {
+  document.getElementById("error-box").style.display = "none";
+}
+
+document.getElementById("energy").addEventListener("input", e => {
+  document.getElementById("energy-val").textContent = parseFloat(e.target.value).toFixed(2);
+});
+document.getElementById("novelty").addEventListener("input", e => {
+  document.getElementById("novelty-val").textContent = parseFloat(e.target.value).toFixed(2);
+});
+document.getElementById("diversity").addEventListener("input", e => {
+  document.getElementById("diversity-val").textContent = parseFloat(e.target.value).toFixed(2);
+});
+
+function renderPlayer(spotifyId, title, artist) {
+  const container = document.getElementById("r-player");
+  if (spotifyId) {
+    container.innerHTML = `
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/${spotifyId}?utm_source=generator"
+        width="100%" height="152" frameborder="0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy" title="Spotify player for ${title} by ${artist}"></iframe>
+    `;
+  } else {
+    // A small number of tracks (those without a real Kaggle/Spotify match)
+    // don't have a spotify_id -- fall back to a plain search link rather
+    // than showing nothing or a broken embed.
+    const query = encodeURIComponent(`${title} ${artist}`);
+    container.innerHTML = `
+      <a class="link-button" style="font-size:13px" target="_blank" rel="noopener"
+         href="https://open.spotify.com/search/${query}">
+        Search "${title}" by ${artist} on Spotify
+      </a>
+    `;
+  }
+}
+
+function renderBreakdown(breakdown) {
+  const labels = { audio: "Audio", tags: "Tags", sequence: "Sequence", context: "Context" };
+  const helpText = {
+    audio: "How close the tempo, energy, and mood of the track are to your last seed track",
+    tags: "How many genre/style tags this track shares with your last seed track",
+    sequence: "How often this track has really followed your seed track in other playlists",
+    context: "How well the track matches the mood and energy you asked for",
+  };
+  const container = document.getElementById("r-breakdown");
+  container.innerHTML = "";
+  Object.entries(breakdown).forEach(([key, value]) => {
+    const pct = Math.round(value * 100);
+    const row = document.createElement("div");
+    row.className = "breakdown-row";
+    row.innerHTML = `
+      <div class="breakdown-label">${labels[key] || key}<span class="help-icon" title="${helpText[key] || ''}" aria-label="${helpText[key] || ''}">?</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="breakdown-pct">${pct}%</div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function renderAlternatives(recommendations) {
+  const card = document.getElementById("alternatives-card");
+  const list = document.getElementById("alternatives-list");
+  if (!recommendations.length) {
+    card.style.display = "none";
+    return;
+  }
+  list.innerHTML = "";
+  recommendations.forEach(r => {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; justify-content:space-between; align-items:center; " +
+      "padding:8px 0; border-bottom:1px solid var(--border); font-size:13px;";
+    row.innerHTML = `
+      <div>
+        <div style="font-weight:600;">${r.title}</div>
+        <div class="artist" style="font-size:12px;">${r.artist}</div>
+      </div>
+      <div class="score-badge" style="font-size:14px;">${Math.round(r.score * 100)}%</div>
+    `;
+    list.appendChild(row);
+  });
+  card.style.display = "block";
+}
+
+let searchDebounceTimer = null;
+ 
+document.getElementById("track-search").addEventListener("input", (e) => {
+  const query = e.target.value.trim();
+  clearTimeout(searchDebounceTimer);
+ 
+  if (!query) {
+    document.getElementById("search-hint").style.display = "none";
+    renderTracks(allTracks);
+    return;
+  }
+ 
+  searchDebounceTimer = setTimeout(async () => {
+    if (query.length < 2) return; // matches the API's 400 threshold
+    try {
+      const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+      if (!res.ok) throw new Error("search failed");
+      const results = await res.json();
+      document.getElementById("search-hint").style.display = "block";
+      renderTracks(results);
+    } catch (err) {
+      // Fall back to filtering the already-loaded track list client-side
+      // if /search is unreachable, so the UI still works.
+      const q = query.toLowerCase();
+      const filtered = allTracks.filter(
+        t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q)
+      );
+      document.getElementById("search-hint").style.display = "block";
+      renderTracks(filtered);
+    }
+  }, 300); // debounce so we don't hit the API on every keystroke
+});
+ 
+document.getElementById("clear-search").addEventListener("click", () => {
+  document.getElementById("track-search").value = "";
+  document.getElementById("search-hint").style.display = "none";
+  renderTracks(allTracks);
+});
+
+document.getElementById("go").addEventListener("click", async () => {
+  hideError();
+  if (selected.size === 0) {
+    showError("Pick at least one seed track first.");
+    return;
+  }
+
+  const body = {
+    track_ids: Array.from(selected),
+    mood: document.getElementById("mood").value,
+    energy: parseFloat(document.getElementById("energy").value),
+    novelty: parseFloat(document.getElementById("novelty").value),
+    diversity: parseFloat(document.getElementById("diversity").value),
+  };
+
+  const btn = document.getElementById("go");
+  btn.disabled = true;
+  btn.setAttribute("aria-busy", "true");
+  btn.textContent = "Thinking…";
+
+  try {
+    const res = await fetch("/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+ 
+    if (!res.ok) {
+      if (res.status === 429) {
+        showError(data.error || "Too many requests -- please wait a moment and try again.");
+      } else {
+        showError(data.error || "Something went wrong.");
+      }
+      document.getElementById("result-card").style.display = "none";
+      return;
+    }
+
+    document.getElementById("r-title").textContent = data.title;
+    document.getElementById("r-artist").textContent = data.artist;
+    document.getElementById("r-score").textContent = Math.round(data.score * 100) + "%";
+    document.getElementById("r-reason").textContent = data.reason;
+    document.getElementById("r-tags").innerHTML = data.tags.map(t => `<span class="tag-chip">${t}</span>`).join(" ");
+
+    const sourceChip = document.getElementById("r-source");
+    const isReal = data.tag_source.startsWith("musicbrainz");
+    sourceChip.textContent = isReal ? "real MusicBrainz tags" : "fallback tags";
+    sourceChip.className = "source-chip " + (isReal ? "source-musicbrainz" : "source-fallback");
+
+    renderBreakdown(data.breakdown);
+    renderPlayer(data.spotify_id, data.title, data.artist);
+    document.getElementById("result-card").style.display = "block";
+ 
+    // Second call: /recommend/queue actually applies MMR diversification
+    // (unlike /recommend, which only ever returns one track and never
+    // runs MMR). This is what makes the diversity slider visible.
+    try {
+      const queueRes = await fetch("/recommend/queue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, count: 4 }),
+      });
+      const queueData = await queueRes.json();
+      if (queueRes.ok && queueData.recommendations) {
+        renderAlternatives(
+          queueData.recommendations.filter(r => r.track_id !== data.track_id)
+        );
+      } else if (queueRes.status === 429) {
+        document.getElementById("alternatives-card").style.display = "none";
+        // Non-fatal: main recommendation above already succeeded, so
+        // just skip the alternatives silently rather than showing a
+        // second error banner on top of the main one.
+      }
+    } catch (err) {
+      document.getElementById("alternatives-card").style.display = "none";
+    }
+  } catch (err) {
+    showError("Could not reach the API. Is app.py still running?");
+  } finally {
+    btn.disabled = false;
+    btn.removeAttribute("aria-busy");
+    btn.textContent = "Get next track";
+  }
+});
+
+loadTracks();
+
+document.getElementById("clear-selections").addEventListener("click", () => {
+  selected.clear();
+  document.querySelectorAll(".track-option.selected").forEach(el => {
+    el.classList.remove("selected");
+    el.setAttribute("aria-selected", "false");
+  });
+});
+</script>
+</body>
+</html>
