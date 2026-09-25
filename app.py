@@ -22,14 +22,12 @@ API directly (in another terminal):
 
 from flask import Flask, request, jsonify, render_template
 from flasgger import Swagger
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from rate_limit_store import rate_limited
 
 from scorer import recommend_next_track
 from data import TRACKS_BY_ID, TRACKS
 
 app = Flask(__name__)
-limiter = Limiter(get_remote_address, app=app, default_limits=["60 per minute"])
 
 swagger_template = {
     "swagger": "2.0",
@@ -169,7 +167,7 @@ def search_tracks():
     return jsonify(matches[:30])
 
 @app.route("/recommend", methods=["POST"])
-@limiter.limit("20 per minute")
+@rate_limited(limit=20, window_seconds=60)
 def recommend():
     """
     Recommend a single next track
@@ -258,7 +256,7 @@ def recommend():
 
 
 @app.route("/recommend/queue", methods=["POST"])
-@limiter.limit("20 per minute")
+@rate_limited(limit=20, window_seconds=60)
 def recommend_queue():
     """
     Recommend several diverse next tracks
@@ -362,13 +360,6 @@ def recommend_queue():
             for r in results
         ]
     })
-
-@app.errorhandler(429)
-def ratelimit_handler(e):
-    return jsonify({
-        "error": "Too many requests -- please wait a moment before trying again.",
-        "retry_after": str(e.description),
-    }), 429
 
 
 if __name__ == "__main__":

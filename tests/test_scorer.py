@@ -13,7 +13,7 @@ Run with:
 import itertools
 import pytest
 from data import TRACKS, TRACKS_BY_ID
-from scorer import recommend_next_track, audio_similarity, explain, hybrid_score
+from scorer import recommend_next_track, audio_similarity, explain, hybrid_score, WEIGHT_AUDIO, WEIGHT_TAGS, WEIGHT_SEQUENCE, WEIGHT_CONTEXT
 
 from scorer import (
     audio_similarity, tag_overlap, sequence_score, context_adjustment,
@@ -68,6 +68,12 @@ def test_hybrid_score_bounded_0_1():
         result = hybrid_score(seed_ids, candidate, "neutral", 0.5)
         assert 0.0 <= result["score"] <= 1.0
 
+def test_weights_sum_to_one():
+    """Guards against a silent scoring bug: if the four weights don't
+    sum to 1.0, hybrid_score()'s output is still clamped into [0, 1]
+    by the max/min guard, which HIDES the bug rather than catching it."""
+    total = WEIGHT_AUDIO + WEIGHT_TAGS + WEIGHT_SEQUENCE + WEIGHT_CONTEXT
+    assert total == pytest.approx(1.0)
 
 def test_novelty_zero_keeps_original_scores():
     # With novelty=0.0, the boost term should vanish entirely, so the

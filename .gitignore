@@ -44,6 +44,13 @@ env/
 # =========================
 spotify_id_cache.json
 musicbrainz_cache.json
+rate_limits.sqlite3
+transitions.json
+
+# =========================
+# Databases
+# =========================
+*.sqlite3
 
 # =========================
 # Large datasets
@@ -66,3 +73,24 @@ Thumbs.db
 # Logs
 # =========================
 *.log
+
+# =========================
+# Build / distribution
+# =========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# =========================
+# Coverage / testing
+# =========================
+.coverage
+coverage.xml
+htmlcov/
+
+# =========================
+# Editor swap files
+# =========================
+*.swp
+*.swo

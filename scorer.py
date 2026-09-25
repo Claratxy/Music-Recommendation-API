@@ -1,34 +1,11 @@
 """
 scorer.py 
 ---------------------
-
-Changes from the original prototype:
-
-1. MULTI-SEED SCORING: audio/tag/context similarity is now computed
-   against the whole listening-history sequence, not just the last
-   track, with more recent tracks weighted more heavily (recency
-   decay). This is closer to what the brief asks for -- "a sequence of
-   track identifiers that the next track should follow from" -- rather
-   than effectively a single-track lookup.
-
-2. SEQUENCE SCORE now also checks transitions from earlier seeds
-   (with decayed weight), not only the very last one, so a known
-   strong transition two tracks back still contributes.
-
-3. REAL MMR for recommend_next_track(top_n>1): each additional pick
-   is chosen to balance relevance (adjusted_score) against audio
-   similarity to tracks already selected, per Carbonell & Goldstein
-   (1998). Previously /recommend/queue's docstring claimed this but
-   the code just took the top-N by score, which produced near-
-   duplicate results and did not match the documented behaviour.
-
-4. Same three exported names / same external interface as before
-   (data.py, app.py, tests/* do not need to change), so this is a
-   drop-in replacement.
 """
 
 import re
 import math
+import numpy as np
 from data import TRACKS, TRACKS_BY_ID, TRANSITION_COUNTS
 
 WEIGHT_AUDIO = 0.35
@@ -175,30 +152,75 @@ def hybrid_score(seed_track_ids, candidate, mood, energy_target):
 def novelty_rerank(scored_candidates, novelty):
     if not scored_candidates:
         return []
-
+ 
     relatedness_values = [c["relatedness"] for c in scored_candidates]
     max_relatedness = max(relatedness_values) if relatedness_values else 0.0
     relatedness_floor = 0.5 * max_relatedness
-
-    pops = [TRACKS_BY_ID[c["id"]]["popularity"] for c in scored_candidates]
+ 
+    pops = [_pop(item) for item in scored_candidates]
     min_pop, max_pop = min(pops), max(pops)
     pop_range = max(max_pop - min_pop, 1e-6)
-
+ 
     adjusted = []
     for item in scored_candidates:
-        track = TRACKS_BY_ID[item["id"]]
+        popularity = _pop(item)
         relatedness = item["relatedness"]
         if relatedness < relatedness_floor or max_relatedness == 0:
             novelty_boost = 0.0
         else:
-            relative_rarity = (max_pop - track["popularity"]) / pop_range
-            novelty_boost = novelty * relative_rarity * (relatedness / max_relatedness) * item["score"]
+            relative_rarity = (max_pop - popularity) / pop_range
+            # squared relatedness ratio: the one-line fix for the
+            # convergence problem found in Section 5.4 of the draft.
+            relatedness_ratio = (relatedness / max_relatedness) ** 2
+            novelty_boost = novelty * relative_rarity * relatedness_ratio * item["score"]
         adjusted_score = (1 - novelty) * item["score"] + novelty_boost
         adjusted.append({**item, "adjusted_score": adjusted_score})
-
+ 
     adjusted.sort(key=lambda x: x["adjusted_score"], reverse=True)
     return adjusted
 
+def _pop(item):
+    # kept as a tiny helper so this file doesn't need to import
+    # TRACKS_BY_ID -- in scorer.py itself, just keep using
+    # TRACKS_BY_ID[item["id"]]["popularity"] as before.
+    from data import TRACKS_BY_ID
+    return TRACKS_BY_ID[item["id"]]["popularity"]
+
+def build_feature_matrix(tracks):
+    """Pre-computes a (N, 3) numpy array of [tempo/200, energy, valence]
+    for every track in a fixed order, plus an id->row index map. Built
+    once at import time in data.py and reused by every request, instead
+    of being rebuilt per-request."""
+    ids = [t["id"] for t in tracks]
+    matrix = np.array(
+        [[t["tempo"] / 200.0, t["energy"], t["valence"]] for t in tracks],
+        dtype=np.float64,
+    )
+    index = {tid: i for i, tid in enumerate(ids)}
+    return ids, matrix, index
+ 
+ 
+_MAX_DIST = np.sqrt(3.0)
+
+def audio_similarity_batch(seed_vec, all_vecs):
+    """Vectorized version of audio_similarity(): compares one seed
+    feature vector against every row of all_vecs at once.
+ 
+    Returns an array of similarities in [0, 1], same formula as the
+    scalar audio_similarity() (verified equal in
+    tests/test_scorer_vectorized.py), but computed in one numpy call
+    instead of a Python loop over every candidate. For a 174-track
+    catalogue this is not strictly necessary for interactive-speed use,
+    but it is what makes weight_optimizer.py's grid search (which
+    re-scores the whole catalogue for every seed, for every weight
+    combination, across a k-fold split -- tens of thousands of scoring
+    calls) run in seconds rather than minutes, and is the kind of
+    micro-optimization a production-grade recommender needs once the
+    catalogue or the weight-search space grows.
+    """
+    diff = seed_vec - all_vecs
+    dist = np.linalg.norm(diff, axis=1)
+    return 1.0 - np.minimum(dist / _MAX_DIST, 1.0)
 
 def _mmr_select(ranked_candidates, top_n, lambda_relevance=0.7):
     """

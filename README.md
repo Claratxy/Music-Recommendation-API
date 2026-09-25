@@ -11,12 +11,15 @@ Built for CM3070 Template 7.2 (NextTrack: A music recommendation API).
 ## Quickstart
 
 ```bash
-python -m venv my_env
+powershell -ExecutionPolicy Bypass
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+py -m venv my_env
 my_env\Scripts\activate          # Windows
 # source my_env/bin/activate     # macOS/Linux
 
 pip install -r requirements.txt
-python app.py
+py app.py
 ```
 
 Then open:
