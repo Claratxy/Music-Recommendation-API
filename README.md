@@ -56,11 +56,7 @@ project root deliberately. Everything else is either a one-off/offline
 script or reference material, grouped by purpose.
 
 ## Frontend
-(assets/FindTracks.png) 
-(assets/Mood&ListingOrder.png) 
-(assets/NextTrack.png) 
-(assets/MoreLikeThis.png) 
-
+![Find tracks](assets/FindTracks.png)![Listening order and mood controls](assets/Mood&ListingOrder.png)![Now Playing recommendation](assets/NextTrack.png)![More like this — inline playback and queueing](assets/MoreLikeThis.png)
 
 ## Quickstart
 
