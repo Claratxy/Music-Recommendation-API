@@ -1,14 +1,12 @@
 """
 weight_optimizer.py
 --------------------
-NEW for the Final Report. Turns NextTrack's fixed hybrid-score weights
+Turns NextTrack's fixed hybrid-score weights
 (0.35 / 0.25 / 0.20 / 0.20, chosen by reasoned judgement in the Draft
 Report, Section 3.4) into weights fit by cross-validated search against
 real mined transition data, plus an ablation study that quantifies each
 signal's individual contribution.
 
-WHY THIS MATTERS FOR THE REPORT
---------------------------------
 The draft's design chapter justified the fixed weights with literature
 (Schedl et al. 2022; Whitman & Lawrence 2002) and reasoned argument, but
 never tested whether those specific numbers were actually good numbers
@@ -29,8 +27,7 @@ any single one. This script closes that gap directly:
      result the module's own guidance says should be reported
      honestly rather than only favourable numbers being kept.
 
-This also gives Chapter 5 (Evaluation) something genuinely new to
-report beyond the draft: a controlled comparison between "expert-
+This also gives Evaluation something genuinely new: a controlled comparison between "expert-
 chosen" and "data-optimized" weights, with train/test separation so
 the number is not simply overfit to the evaluation set itself.
 

@@ -1,6 +1,6 @@
 """
 data.py
---------
+---------
 Builds the final TRACKS / TRACKS_BY_ID / TRANSITION_COUNTS structures
 that scorer.py uses, by combining:
 

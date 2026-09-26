@@ -1,6 +1,6 @@
 """
 merge_catalog.py
-------------------
+-------------------
 Combines new_track_catalog.py (real audio features, 180 tracks) and
 transitions.json (real playlist transitions) into a final track_catalog.py
 that's a drop-in replacement for the original mock version -- same three

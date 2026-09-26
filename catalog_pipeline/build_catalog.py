@@ -103,7 +103,7 @@ def match_existing(rows):
             row = index[candidates[0]] if candidates else None
             match_type = "fuzzy"
 
-        # NEW: reject fuzzy matches with suspiciously low popularity for
+        # Reject fuzzy matches with suspiciously low popularity for
         # tracks known to be mainstream hits -- these are usually wrong
         # matches (remixes, edits, or unrelated tracks with similar names)
         # rather than genuinely obscure versions.

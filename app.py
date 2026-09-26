@@ -1,6 +1,6 @@
 """
 app.py
--------
+--------
 A small Flask app exposing the hybrid scorer as a REST API, plus a
 simple web page (templates/index.html) that calls it and visualises
 the result. This is the same API described in the project proposal and

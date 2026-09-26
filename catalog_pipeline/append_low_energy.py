@@ -7,7 +7,7 @@ way merge_catalog.py originally built it -- so the output stays a
 drop-in file with the same three exported names (TRACK_CATALOG,
 FALLBACK_TAGS, TRANSITION_COUNTS) that data.py and scorer.py expect.
 
-This exists so you don't hand-edit the auto-generated track_catalog.py
+This exists so don't hand-edit the auto-generated track_catalog.py
 directly (easy to break the Python syntax in a 179-entry list by hand).
 
 Usage (run in the project root, where track_catalog.py and

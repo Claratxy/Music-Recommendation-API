@@ -1,6 +1,6 @@
 """
 fetch_tags.py
---------------
+---------------
 One-time (or refresh-anytime) setup script: looks up real MusicBrainz
 tags for every track in track_catalog.py, and saves them to
 musicbrainz_cache.json.

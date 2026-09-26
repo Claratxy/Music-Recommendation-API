@@ -521,7 +521,7 @@ def generate_verdict(results_dict):
                 f"costing sensitivity."
             )
 
-    # --- Calm-adherence plateau (NEW finding) ---------------------------
+    # ---- Calm-adherence plateau (NEW finding) ---------------------------
     if "calm_deviation" in results_dict:
         current_dev = results_dict["calm_deviation"]
         draft_dev = DRAFT_CALM_ADHERENCE_DEVIATION

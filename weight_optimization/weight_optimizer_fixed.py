@@ -1,9 +1,9 @@
 """
 weight_optimizer_fixed.py
 ---------------------------
-Fixes a data-leakage bug in the original weight_optimizer.py.
+Fixes a data-leakage in the original weight_optimizer.py.
 
-THE BUG (found by running the original against the real catalogue):
+What found by running the original against the real catalogue:
 sequence-only weighting scored exactly 100.0% Hit@1/Hit@5 across every
 cross-validation fold, with zero variance. That is not evidence the
 sequence signal is powerful -- it is proof the evaluation was

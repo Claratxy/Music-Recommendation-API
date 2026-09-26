@@ -1,6 +1,6 @@
 """
 musicbrainz_client.py
------------------------
+----------------------
 A small client for the MusicBrainz API, used to fetch real genre/style
 tags for real tracks. This is the live "MusicBrainz metadata" data
 source described in Chapter 3 of the Preliminary Report.

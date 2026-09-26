@@ -12,7 +12,7 @@ Approach: re-uses build_catalog.py's genre-sampling machinery, but
 targets genres/energy bands under-represented in the current
 catalogue instead of sampling top-N-by-popularity per genre
 regardless of energy. Classical, acoustic, and jazz already skew calm
-in your existing catalogue (see track_catalog.py) -- this samples
+in the existing catalogue (see track_catalog.py) -- this samples
 MORE from exactly those genres, filtered explicitly by energy < 0.35,
 rather than by raw popularity, which is what caused the original skew
 (the most popular tracks in any genre tend to be higher-energy).
