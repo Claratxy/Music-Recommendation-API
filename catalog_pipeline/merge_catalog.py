@@ -14,6 +14,10 @@ Usage (run in the same folder as new_track_catalog.py and transitions.json):
 import importlib.util
 import json
 import re
+import os
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_ROOT = os.path.dirname(_HERE)
 
 # The original curated 2-tag fallbacks for the 14 tracks that were in the
 # prototype from the start -- kept as-is, since they're already accurate
@@ -59,7 +63,8 @@ def _dedupe_catalog(catalog):
                   f"(popularity={t['popularity']})")
     return list(seen.values())
 
-def load_catalog(path="new_track_catalog.py"):
+def load_catalog(path=None):
+    path = path or os.path.join(_HERE, "new_track_catalog.py")
     spec = importlib.util.spec_from_file_location("new_track_catalog", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -69,7 +74,7 @@ def main():
     catalog = load_catalog()
     catalog = _dedupe_catalog(catalog) 
 
-    with open("transitions.json", encoding="utf-8") as f:
+    with open(os.path.join(_HERE, "transitions.json"), encoding="utf-8") as f:
         raw_transitions = json.load(f)
     transitions = {}
     for key, count in raw_transitions.items():
@@ -86,7 +91,7 @@ def main():
             # a single genre-derived tag is enough for the scorer to run.
             fallback_tags[tid] = [track.get("genre_hint", "unknown")]
 
-    with open("track_catalog.py", "w", encoding="utf-8") as out:
+    with open(os.path.join(_ROOT, "track_catalog.py"), "w", encoding="utf-8") as out:
         out.write('"""\n')
         out.write("track_catalog.py\n")
         out.write("-----------------\n")

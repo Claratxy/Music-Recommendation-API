@@ -17,7 +17,7 @@ at all.
 """
 
 from track_catalog import TRACK_CATALOG
-from musicbrainz_client import get_tags_for_track
+from musicbrainz.musicbrainz_client import get_tags_for_track
 
 if __name__ == "__main__":
     print(f"Looking up {len(TRACK_CATALOG)} tracks on MusicBrainz...")

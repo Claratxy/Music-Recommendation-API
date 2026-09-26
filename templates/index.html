@@ -2,223 +2,367 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NextTrack — Live Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #2163b3;
-    --card: #181b22;
-    --border: #2a2e38;
-    --text: #f1f2f4;
-    --muted: #b0b3ba;
-    --accent: #6c8cff;
-    --accent2: #54d6a0;
-    --warn: #ff7a7a;
+    --ink: #2f4d52;
+    --surface: #1b1d26;
+    --surface-2: #23252f;
+    --line: #2c2f3b;
+    --paper: #efede6;
+    --muted: #9a9dac;
+    --muted-dim: #6d6f7d;
+    --amber: #e3a23b;
+    --amber-ink: #241a08;
+    --teal: #4fbfa0;
+    --danger: #e8735f;
+    --radius: 14px;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 32px 16px 64px;
+    font-family: 'Inter', -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--ink);
+    background-image:
+      radial-gradient(1200px 600px at 85% -10%, rgba(227,162,59,0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, rgba(79,191,160,0.06), transparent 55%);
+    color: var(--paper);
+    min-height: 100vh;
   }
-  .wrap { max-width: 760px; margin: 0 auto; }
-  h1 { font-size: 22px; margin-bottom: 4px; }
-  .subtitle { color: var(--muted); margin-bottom: 28px; font-size: 14px; }
+  h1, h2, .serif { font-family: 'Fraunces', Georgia, serif; }
 
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 22px;
-    margin-bottom: 20px;
+  /* ---------- header ---------- */
+  header.top {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    max-width: 1180px; margin: 0 auto; padding: 36px 24px 20px;
   }
-  .card h2 {
-    font-size: 15px;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: var(--muted);
-    margin: 0 0 14px;
+  .wordmark { font-size: 30px; font-weight: 500; letter-spacing: -0.01em; }
+  .wordmark span { color: var(--amber); }
+  .tagline { color: var(--muted); font-size: 14px; max-width: 520px; text-align: right; line-height: 1.5; }
+
+  /* ---------- layout ---------- */
+  .app {
+    max-width: 1180px; margin: 0 auto; padding: 0 24px 80px;
   }
+  .row-mid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 22px;
+    align-items: start; margin-top: 18px;
+  }
+  .row-mid > .panel + .panel { margin-top: 0; }
+  @media (max-width: 820px) {
+    .row-mid { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+  .panel + .panel { margin-top: 18px; }
+  .panel h2 {
+    font-size: 15px; font-weight: 500; margin: 0 0 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel .sub { color: var(--muted); font-size: 13px; margin: 0 0 16px; line-height: 1.5; }
+  .step-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--line);
+    font-size: 11px; font-family: 'Inter'; color: var(--muted); flex-shrink: 0;
+  }
+
+  /* ---------- search + track grid ---------- */
+  input[type="text"].search {
+    width: 100%; padding: 11px 14px; margin-bottom: 12px;
+    border-radius: 10px; background: var(--surface-2); color: var(--paper);
+    border: 1px solid var(--line); font-size: 14px; font-family: inherit;
+  }
+  input[type="text"].search::placeholder { color: var(--muted-dim); }
+  input[type="text"].search:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
 
   .tracks-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 8px;
-    max-height: 260px;
-    overflow-y: auto;
-    padding-right: 4px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 4px;
   }
+  .tracks-grid::-webkit-scrollbar { width: 6px; }
+  .tracks-grid::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
   .track-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
+    display: flex; align-items: center; gap: 8px; padding: 9px 11px;
+    border: 1px solid var(--line); border-radius: 9px; cursor: pointer; font-size: 13px;
+    background: var(--surface-2); transition: border-color .12s ease;
   }
-  .track-option.selected { border-color: var(--accent); background: rgba(108,140,255,0.12); }
+  .track-option:hover { border-color: var(--muted-dim); }
+  .track-option.selected { border-color: var(--amber); background: rgba(227,162,59,0.10); }
   .track-option .artist { color: var(--muted); font-size: 12px; }
+  .track-option:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 
-  .controls-row { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 6px; }
-  .control { flex: 1; min-width: 160px; }
-  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  select {
-    width: 100%; padding: 8px; border-radius: 8px;
-    background: #11141a; color: var(--text); border: 1px solid var(--border);
+  .hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .link-button {
+    background: none; border: none; color: var(--amber); font-size: 12px;
+    text-decoration: underline; cursor: pointer; padding: 0; font-family: inherit;
   }
-  input[type="range"] { width: 100%; }
-  .range-value { font-size: 12px; color: var(--accent); float: right; }
 
+  /* ---------- ordered seed queue ---------- */
+  .queue-list { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+  .queue-empty {
+    color: var(--muted-dim); font-size: 13px; border: 1px dashed var(--line);
+    border-radius: 9px; padding: 16px; text-align: center;
+  }
+  .queue-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 9px;
+    padding: 8px 10px;
+  }
+  .queue-pos {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--ink);
+    border: 1px solid var(--amber); color: var(--amber);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; flex-shrink: 0;
+  }
+  .queue-row .meta { flex: 1; min-width: 0; }
+  .queue-row .meta .t { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .queue-row .meta .a { font-size: 11px; color: var(--muted); }
+  .queue-row .recency-tag {
+    font-size: 10px; color: var(--muted-dim); border: 1px solid var(--line);
+    border-radius: 999px; padding: 2px 7px; white-space: nowrap;
+  }
+  .icon-btn {
+    width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--line);
+    background: transparent; color: var(--muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+    flex-shrink: 0;
+  }
+  .icon-btn:hover:not(:disabled) { border-color: var(--muted); color: var(--paper); }
+  .icon-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ---------- context controls ---------- */
+  .mood-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+  .mood-chip {
+    padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--surface-2); color: var(--muted); font-size: 12.5px; cursor: pointer;
+    font-family: inherit;
+  }
+  .mood-chip.active { border-color: var(--amber); color: var(--amber-ink); background: var(--amber); font-weight: 600; }
+
+  .slider-row { margin-bottom: 16px; }
+  .slider-row label {
+    display: flex; justify-content: space-between; font-size: 12.5px;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .slider-row .val { color: var(--paper); font-variant-numeric: tabular-nums; }
+  input[type="range"] {
+    width: 100%; accent-color: var(--amber); height: 4px;
+  }
+  input[type="range"]:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+  .slider-caption { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted-dim); margin-top: 4px; }
+
+  .cta-wrap { margin: 26px 0; display: flex; justify-content: center; }
   button#go {
-    margin-top: 22px;
-    width: 100%;
-    padding: 13px;
-    border-radius: 10px;
-    border: none;
-    background: var(--accent);
-    color: white;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
+    width: 100%; max-width: 420px; padding: 15px; border-radius: 999px; border: none;
+    background: var(--amber); color: var(--amber-ink); font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: 'Inter'; letter-spacing: .01em;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 8px 28px -8px rgba(227,162,59,0.55);
+    transition: transform .12s ease, box-shadow .12s ease;
   }
-  button#go:disabled { opacity: .5; cursor: not-allowed; }
+  button#go:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 32px -8px rgba(227,162,59,0.65); }
+  button#go:disabled { opacity: .55; cursor: not-allowed; }
+  button#go:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+  .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(0,0,0,.25); border-top-color: var(--amber-ink); animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ---------- error banner ---------- */
+  #error-box {
+    display: none; border: 1px solid var(--danger); background: rgba(232,115,95,0.08);
+    color: #ffb3a4; border-radius: 10px; padding: 12px 14px; font-size: 13px; margin-bottom: 18px;
+  }
+
+  /* ---------- now playing ---------- */
   #result-card { display: none; }
-  .result-header { display: flex; justify-content: space-between; align-items: baseline; }
-  .track-title { font-size: 20px; font-weight: 700; }
-  .track-artist { color: var(--muted); font-size: 14px; }
-  .score-badge {
-    font-size: 22px; font-weight: 700; color: var(--accent2);
+  .record-wrap { position: relative; display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+  .record {
+    width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; position: relative;
+    background:
+      radial-gradient(circle at center, var(--ink) 0 8px, transparent 8.5px),
+      repeating-radial-gradient(circle at center, var(--surface-2) 0 2px, var(--ink) 2px 4px);
+    border: 1px solid var(--line);
   }
+  .record::after {
+    content: ""; position: absolute; inset: 0; margin: auto;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--amber);
+  }
+  .record.spin-active { animation: spin 3.2s linear infinite; }
+  @media (prefers-reduced-motion: reduce) { .record.spin-active { animation: none; } }
+  .track-title { font-size: 21px; font-weight: 500; line-height: 1.25; }
+  .track-artist { color: var(--muted); font-size: 14px; margin-top: 2px; }
+
+  .score-ring { position: relative; width: 58px; height: 58px; flex-shrink: 0; margin-left: auto; }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring .pct {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: var(--teal); font-variant-numeric: tabular-nums;
+  }
+
   .reason {
-    margin: 14px 0 18px;
-    font-size: 14px;
-    color: var(--text);
-    background: #11141a;
-    border-radius: 8px;
-    padding: 12px 14px;
-    border-left: 3px solid var(--accent);
+    font-size: 13.5px; line-height: 1.55; color: var(--paper);
+    background: var(--surface-2); border-radius: 10px; padding: 12px 14px;
+    border-left: 3px solid var(--amber); margin-bottom: 16px;
   }
 
-  .breakdown-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
-  .breakdown-label { width: 80px; color: var(--muted); }
-  .bar-track { flex: 1; height: 10px; background: #11141a; border-radius: 6px; overflow: hidden; }
-  .bar-fill { height: 100%; background: var(--accent); }
-  .breakdown-pct { width: 38px; text-align: right; color: var(--muted); }
+  .breakdown-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 12.5px; }
+  .breakdown-label { width: 74px; color: var(--muted); flex-shrink: 0; }
+  .bar-track { flex: 1; height: 8px; background: var(--surface-2); border-radius: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--amber)); border-radius: 6px; width: 0; transition: width .5s ease; }
+  .breakdown-pct { width: 34px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .help-icon {
+    display: inline-block; width: 13px; height: 13px; line-height: 13px; border-radius: 50%;
+    background: var(--line); color: var(--muted); font-size: 9px; text-align: center; cursor: help; margin-left: 3px;
+  }
 
-  .tags-row { margin-top: 16px; font-size: 12px; color: var(--muted); }
+  .tags-row { margin-top: 14px; font-size: 12px; color: var(--muted); }
   .tag-chip {
-    display: inline-block; background: #11141a; border: 1px solid var(--border);
-    border-radius: 999px; padding: 3px 10px; margin: 2px 4px 2px 0; font-size: 12px;
+    display: inline-block; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 999px; padding: 3px 10px; margin: 2px 5px 2px 0; font-size: 11.5px;
   }
   .source-chip {
-    display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px;
-    font-size: 11px; font-weight: 600;
+    display: inline-block; margin-left: 6px; padding: 2px 9px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 600;
   }
-  .source-musicbrainz { background: rgba(84,214,160,0.18); color: var(--accent2); }
-  .source-fallback { background: rgba(255,122,122,0.18); color: var(--warn); }
+  .source-musicbrainz { background: rgba(79,191,160,0.16); color: var(--teal); }
+  .source-fallback { background: rgba(227,162,59,0.14); color: var(--amber); }
 
-  #error-box {
-    display: none;
-    border: 1px solid var(--warn);
-    color: var(--warn);
-    border-radius: 8px;
-    padding: 12px 14px;
-    font-size: 13px;
-    margin-bottom: 20px;
-  }
-  .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
-  .link-button {
-    background: none; border: none; color: var(--accent); font-size: 12px;
-    text-decoration: underline; cursor: pointer; padding: 0; margin-left: 8px;
-  }
-  .help-icon {
-    display: inline-block; width: 14px; height: 14px; line-height: 14px;
-    border-radius: 50%; background: var(--border); color: var(--muted);
-    font-size: 10px; text-align: center; cursor: help; margin-left: 4px;
-  }
+  #r-player { margin-top: 16px; border-radius: 12px; overflow: hidden; }
 
-  /* Accessibility: visible focus states for keyboard users */
-  .track-option:focus-visible,
-  select:focus-visible,
-  input[type="range"]:focus-visible,
-  button#go:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+  /* ---------- more like this ---------- */
+  #alternatives-card { display: none; }
+  .alt-row {
+    border-bottom: 1px solid var(--line);
+  }
+  .alt-row:last-child { border-bottom: none; }
+  .alt-row-main {
+    display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 13px;
+  }
+  .alt-title { font-weight: 600; }
+  .alt-artist { font-size: 11.5px; color: var(--muted); }
+  .alt-score { font-size: 12px; color: var(--teal); font-variant-numeric: tabular-nums; width: 38px; text-align: right; }
+  .alt-actions { display: flex; gap: 6px; margin-left: 4px; }
+  .alt-btn {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--paper);
+    border-radius: 7px; padding: 6px 9px; font-size: 11px; cursor: pointer; font-family: inherit;
+    white-space: nowrap;
+  }
+  .alt-btn:hover { border-color: var(--muted); }
+  .alt-btn.play.active { border-color: var(--teal); color: var(--teal); }
+  .alt-embed { display: none; padding: 0 0 12px; }
+  .alt-embed.open { display: block; }
+
+  .empty-alts { color: var(--muted-dim); font-size: 13px; padding: 8px 0; }
+
+  footer.note {
+    max-width: 1180px; margin: 10px auto 0; padding: 20 24px; color: var(--muted-dim);
+    font-size: 14px; line-height: 1.6;
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>NextTrack — live demo</h1>
-  <div class="subtitle">Stateless hybrid scorer + novelty re-ranking, running on real MusicBrainz tag data.</div>
+
+<header class="top">
+  <div class="wordmark">Next<span>Track</span></div>
+  <div class="tagline">A stateless recommendation API. Nothing is remembered between requests — this session lives only in your browser tab.</div>
+</header>
+
+<div class="app">
 
   <div id="error-box" role="alert" aria-live="assertive"></div>
 
-  <div class="card">
-    <h2 id="tracks-heading">1. Pick your recent tracks (1–5)</h2>
-    <input
-      type="text"
-      id="track-search"
-      placeholder="Search songs or artists…"
-      aria-label="Search songs or artists"
-      style="width:100%; padding:8px 10px; margin-bottom:10px; border-radius:8px;
-             background:#11141a; color:var(--text); border:1px solid var(--border); font-size:13px;"
-    >
+  <!-- FULL-WIDTH: Find tracks -->
+  <div class="panel">
+    <h2><span class="step-badge">1</span>Find tracks</h2>
+    <p class="sub">Search and add up to five recent tracks. Order matters — the most recent one has the strongest influence on the recommendation.</p>
+
+    <input type="text" id="track-search" class="search" placeholder="Search songs or artists…" aria-label="Search songs or artists">
     <div class="tracks-grid" id="tracks-grid" role="listbox" aria-multiselectable="true" aria-labelledby="tracks-heading">Loading tracks…</div>
     <div class="hint" id="search-hint" style="display:none;">
       Showing search results. <button type="button" id="clear-search" class="link-button">Clear search</button>
     </div>
-    <div class="hint">These act as the listening history sent with each API request — nothing is stored between requests.
-      <button type="button" id="clear-selections" class="link-button">Clear selections</button>
+    <div class="hint" id="clear-hint-top" style="display:none;">
+      <button type="button" id="clear-selections-top" class="link-button">Clear selections</button>
     </div>
   </div>
 
-  <div class="card">
-    <h2>2. Set the context</h2>
-    <div class="controls-row">
-      <div class="control">
-        <label for="mood">Mood</label>
-        <select id="mood">
-          <option value="energetic">Energetic</option>
-          <option value="happy">Happy</option>
-          <option value="calm">Calm</option>
-          <option value="melancholy">Melancholy</option>
-          <option value="neutral" selected>Neutral</option>
-        </select>
-      </div>
-      <div class="control">
-        <label for="energy">Energy <span class="range-value" id="energy-val">0.50</span></label>
-        <input type="range" id="energy" min="0" max="1" step="0.05" value="0.5">
-      </div>
-      <div class="control">
-        <label for="novelty">Novelty (familiar → discover) <span class="range-value" id="novelty-val">0.30</span></label>
-        <input type="range" id="novelty" min="0" max="1" step="0.05" value="0.3">
-      </div>
-
-      <div class="control">
-        <label for="diversity">
-          Diversity (relevance → variety)<span class="range-value" id="diversity-val">0.30</span></label>
-        <input type="range" id="diversity" min="0" max="1" step="0.05" value="0.3">
+  <!-- FIXED TWO-COLUMN ROW: listening order + mood -->
+  <div class="row-mid">
+    <div class="panel">
+      <h2><span class="step-badge">2</span>Your listening order</h2>
+      <p class="sub">This is the sequence sent to the API, most recent last. Reorder it to see how recency changes the recommendation.</p>
+      <div id="queue-list" class="queue-list"></div>
+      <div class="hint" id="clear-hint" style="display:none;">
+        <button type="button" id="clear-selections" class="link-button">Clear all</button>
       </div>
     </div>
+
+    <div class="panel">
+      <h2><span class="step-badge">3</span>Set the mood</h2>
+      <p class="sub">Pick a preset, or fine-tune manually below.</p>
+
+      <div class="mood-chips" id="mood-chips">
+        <button class="mood-chip" data-mood="energetic" data-energy="0.85">Energetic</button>
+        <button class="mood-chip" data-mood="happy" data-energy="0.7">Happy</button>
+        <button class="mood-chip active" data-mood="neutral" data-energy="0.5">Neutral</button>
+        <button class="mood-chip" data-mood="calm" data-energy="0.2">Calm</button>
+        <button class="mood-chip" data-mood="melancholy" data-energy="0.25">Melancholy</button>
+      </div>
+
+      <div class="slider-row">
+        <label for="energy">Energy <span class="val" id="energy-val">0.50</span></label>
+        <input type="range" id="energy" min="0" max="1" step="0.05" value="0.5">
+      </div>
+
+      <div class="slider-row">
+        <label for="novelty">Novelty <span class="val" id="novelty-val">0.30</span></label>
+        <input type="range" id="novelty" min="0" max="1" step="0.05" value="0.3">
+        <div class="slider-caption"><span>Familiar</span><span>Discover</span></div>
+      </div>
+
+      <div class="slider-row" style="margin-bottom:0;">
+        <label for="diversity">Diversity of "More like this" <span class="val" id="diversity-val">0.30</span></label>
+        <input type="range" id="diversity" min="0" max="1" step="0.05" value="0.3">
+        <div class="slider-caption"><span>Similar to top pick</span><span>Spread out</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL-WIDTH BELOW: action + results -->
+  <div class="cta-wrap">
     <button id="go">Get next track</button>
   </div>
 
-  <div class="card" id="result-card" aria-live="polite">
-    <h2>Result</h2>
-    <div class="result-header">
+  <div class="panel" id="result-card" aria-live="polite" style="margin-top:18px;">
+    <div class="record-wrap">
+      <div class="record" id="record-art"></div>
       <div>
-        <div class="track-title" id="r-title"></div>
+        <div class="track-title serif" id="r-title"></div>
         <div class="track-artist" id="r-artist"></div>
       </div>
-      <div class="score-badge" id="r-score"></div>
+      <div class="score-ring">
+        <svg width="58" height="58" viewBox="0 0 58 58">
+          <circle cx="29" cy="29" r="24" fill="none" stroke="#2c2f3b" stroke-width="5"/>
+          <circle id="score-arc" cx="29" cy="29" r="24" fill="none" stroke="#4fbfa0" stroke-width="5"
+                  stroke-dasharray="150.8" stroke-dashoffset="150.8" stroke-linecap="round"/>
+        </svg>
+        <div class="pct" id="r-score"></div>
+      </div>
     </div>
-    <div class="reason" id="r-reason"></div>
 
+    <div class="reason" id="r-reason"></div>
     <div id="r-breakdown"></div>
 
     <div class="tags-row">
@@ -226,26 +370,33 @@
       <span class="source-chip" id="r-source"></span>
     </div>
 
-    <div id="r-player" style="margin-top: 16px;"></div>
+    <div id="r-player"></div>
   </div>
 
-  <div class="card" id="alternatives-card" style="display:none;">
+  <div class="panel" id="alternatives-card" style="margin-top:18px;">
     <h2>More like this</h2>
+    <p class="sub">Play any of these inline, or send one straight to your queue to keep building the session.</p>
     <div id="alternatives-list"></div>
   </div>
+
 </div>
 
+<footer class="note">
+  Every request is self-contained — track_ids, mood, energy, novelty and diversity are the only inputs, and nothing is stored server-side between calls.
+</footer>
+
 <script>
-const selected = new Set();
 const MAX_SEEDS = 5;
+let queue = [];          // ordered array of {id, title, artist} — oldest first, most recent last
 let allTracks = [];
- 
+let lastResultTrackId = null;
+
 async function loadTracks() {
   const res = await fetch("/tracks");
   allTracks = await res.json();
   renderTracks(allTracks);
 }
- 
+
 function renderTracks(list) {
   const grid = document.getElementById("tracks-grid");
   grid.innerHTML = "";
@@ -254,39 +405,99 @@ function renderTracks(list) {
     return;
   }
   list.forEach(t => {
+    const inQueue = queue.some(q => q.id === t.id);
     const el = document.createElement("div");
-    el.className = "track-option" + (selected.has(t.id) ? " selected" : "");
-    el.dataset.id = t.id;
+    el.className = "track-option" + (inQueue ? " selected" : "");
     el.setAttribute("role", "option");
     el.setAttribute("tabindex", "0");
-    el.setAttribute("aria-selected", selected.has(t.id) ? "true" : "false");
-    el.innerHTML = `<span>${t.title}</span><span class="artist">— ${t.artist}</span>`;
-    el.addEventListener("click", () => toggleTrack(el, t.id));
+    el.setAttribute("aria-selected", inQueue ? "true" : "false");
+    el.innerHTML = `<span>${escapeHtml(t.title)}</span><span class="artist">— ${escapeHtml(t.artist)}</span>`;
+    el.addEventListener("click", () => toggleTrack(t));
     el.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggleTrack(el, t.id);
-      }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleTrack(t); }
     });
     grid.appendChild(el);
   });
 }
 
-function toggleTrack(el, id) {
-  if (selected.has(id)) {
-    selected.delete(id);
-    el.classList.remove("selected");
-    el.setAttribute("aria-selected", "false");
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function toggleTrack(track) {
+  const idx = queue.findIndex(q => q.id === track.id);
+  if (idx >= 0) {
+    queue.splice(idx, 1);
   } else {
-    if (selected.size >= MAX_SEEDS) {
-      showError(`You can pick at most ${MAX_SEEDS} seed tracks.`);
+    if (queue.length >= MAX_SEEDS) {
+      showError(`You can pick at most ${MAX_SEEDS} seed tracks. Remove one from your listening order first.`);
       return;
     }
-    selected.add(id);
-    el.classList.add("selected");
-    el.setAttribute("aria-selected", "true");
+    queue.push({ id: track.id, title: track.title, artist: track.artist });
   }
+  renderTracks(getCurrentTrackList());
+  renderQueue();
 }
+
+function getCurrentTrackList() {
+  const q = document.getElementById("track-search").value.trim().toLowerCase();
+  if (!q) return allTracks;
+  return allTracks.filter(t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
+}
+
+function renderQueue() {
+  const list = document.getElementById("queue-list");
+  const clearHint = document.getElementById("clear-hint");
+  const clearHintTop = document.getElementById("clear-hint-top");
+  list.innerHTML = "";
+
+  if (queue.length === 0) {
+    list.innerHTML = '<div class="queue-empty">No tracks yet — add some from the search above.</div>';
+    clearHint.style.display = "none";
+    clearHintTop.style.display = "none";
+    return;
+  }
+  clearHint.style.display = "block";
+  clearHintTop.style.display = "block";
+
+  queue.forEach((t, i) => {
+    const row = document.createElement("div");
+    row.className = "queue-row";
+    const recencyLabel = i === queue.length - 1 ? "most recent" : `${queue.length - 1 - i} step${queue.length - 1 - i > 1 ? "s" : ""} back`;
+    row.innerHTML = `
+      <div class="queue-pos">${i + 1}</div>
+      <div class="meta">
+        <div class="t">${escapeHtml(t.title)}</div>
+        <div class="a">${escapeHtml(t.artist)}</div>
+      </div>
+      <span class="recency-tag">${recencyLabel}</span>
+      <button class="icon-btn" data-act="up" data-i="${i}" ${i === 0 ? "disabled" : ""} title="Move earlier" aria-label="Move ${t.title} earlier">↑</button>
+      <button class="icon-btn" data-act="down" data-i="${i}" ${i === queue.length - 1 ? "disabled" : ""} title="Move later" aria-label="Move ${t.title} later">↓</button>
+      <button class="icon-btn danger" data-act="remove" data-i="${i}" title="Remove" aria-label="Remove ${t.title}">✕</button>
+    `;
+    list.appendChild(row);
+  });
+
+  list.querySelectorAll("[data-act]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const i = parseInt(btn.dataset.i, 10);
+      const act = btn.dataset.act;
+      if (act === "remove") { queue.splice(i, 1); }
+      if (act === "up" && i > 0) { [queue[i - 1], queue[i]] = [queue[i], queue[i - 1]]; }
+      if (act === "down" && i < queue.length - 1) { [queue[i + 1], queue[i]] = [queue[i], queue[i + 1]]; }
+      renderQueue();
+      renderTracks(getCurrentTrackList());
+    });
+  });
+}
+
+function clearAllSelections() {
+  queue = [];
+  renderQueue();
+  renderTracks(getCurrentTrackList());
+}
+document.getElementById("clear-selections").addEventListener("click", clearAllSelections);
+document.getElementById("clear-selections-top").addEventListener("click", clearAllSelections);
 
 function showError(msg) {
   const box = document.getElementById("error-box");
@@ -297,8 +508,19 @@ function hideError() {
   document.getElementById("error-box").style.display = "none";
 }
 
+/* ---------- mood chips ---------- */
+document.getElementById("mood-chips").addEventListener("click", (e) => {
+  const chip = e.target.closest(".mood-chip");
+  if (!chip) return;
+  document.querySelectorAll(".mood-chip").forEach(c => c.classList.remove("active"));
+  chip.classList.add("active");
+  const energy = document.getElementById("energy");
+  energy.value = chip.dataset.energy;
+  document.getElementById("energy-val").textContent = parseFloat(chip.dataset.energy).toFixed(2);
+});
 document.getElementById("energy").addEventListener("input", e => {
   document.getElementById("energy-val").textContent = parseFloat(e.target.value).toFixed(2);
+  document.querySelectorAll(".mood-chip").forEach(c => c.classList.remove("active"));
 });
 document.getElementById("novelty").addEventListener("input", e => {
   document.getElementById("novelty-val").textContent = parseFloat(e.target.value).toFixed(2);
@@ -307,24 +529,59 @@ document.getElementById("diversity").addEventListener("input", e => {
   document.getElementById("diversity-val").textContent = parseFloat(e.target.value).toFixed(2);
 });
 
-function renderPlayer(spotifyId, title, artist) {
-  const container = document.getElementById("r-player");
+function currentMood() {
+  const active = document.querySelector(".mood-chip.active");
+  return active ? active.dataset.mood : "neutral";
+}
+
+/* ---------- search ---------- */
+let searchDebounceTimer = null;
+document.getElementById("track-search").addEventListener("input", (e) => {
+  const query = e.target.value.trim();
+  clearTimeout(searchDebounceTimer);
+  if (!query) {
+    document.getElementById("search-hint").style.display = "none";
+    renderTracks(allTracks);
+    return;
+  }
+  searchDebounceTimer = setTimeout(async () => {
+    if (query.length < 2) return;
+    try {
+      const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+      if (!res.ok) throw new Error("search failed");
+      const results = await res.json();
+      document.getElementById("search-hint").style.display = "block";
+      renderTracks(results);
+    } catch (err) {
+      const q = query.toLowerCase();
+      const filtered = allTracks.filter(t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
+      document.getElementById("search-hint").style.display = "block";
+      renderTracks(filtered);
+    }
+  }, 300);
+});
+document.getElementById("clear-search").addEventListener("click", () => {
+  document.getElementById("track-search").value = "";
+  document.getElementById("search-hint").style.display = "none";
+  renderTracks(allTracks);
+});
+
+/* ---------- rendering the main result ---------- */
+function renderPlayer(container, spotifyId, title, artist, compact) {
   if (spotifyId) {
+    const height = compact ? 80 : 152;
     container.innerHTML = `
       <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/${spotifyId}?utm_source=generator"
-        width="100%" height="152" frameborder="0"
+        width="100%" height="${height}" frameborder="0"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-        loading="lazy" title="Spotify player for ${title} by ${artist}"></iframe>
+        loading="lazy" title="Spotify player for ${escapeHtml(title)} by ${escapeHtml(artist)}"></iframe>
     `;
   } else {
-    // A small number of tracks (those without a real Kaggle/Spotify match)
-    // don't have a spotify_id -- fall back to a plain search link rather
-    // than showing nothing or a broken embed.
     const query = encodeURIComponent(`${title} ${artist}`);
     container.innerHTML = `
       <a class="link-button" style="font-size:13px" target="_blank" rel="noopener"
          href="https://open.spotify.com/search/${query}">
-        Search "${title}" by ${artist} on Spotify
+        Search "${escapeHtml(title)}" by ${escapeHtml(artist)} on Spotify
       </a>
     `;
   }
@@ -333,9 +590,9 @@ function renderPlayer(spotifyId, title, artist) {
 function renderBreakdown(breakdown) {
   const labels = { audio: "Audio", tags: "Tags", sequence: "Sequence", context: "Context" };
   const helpText = {
-    audio: "How close the tempo, energy, and mood of the track are to your last seed track",
-    tags: "How many genre/style tags this track shares with your last seed track",
-    sequence: "How often this track has really followed your seed track in other playlists",
+    audio: "How close the tempo, energy, and mood of the track are to your queue",
+    tags: "How many genre/style tags this track shares with your queue",
+    sequence: "How often this track has really followed your queue in other playlists",
     context: "How well the track matches the mood and energy you asked for",
   };
   const container = document.getElementById("r-breakdown");
@@ -346,86 +603,104 @@ function renderBreakdown(breakdown) {
     row.className = "breakdown-row";
     row.innerHTML = `
       <div class="breakdown-label">${labels[key] || key}<span class="help-icon" title="${helpText[key] || ''}" aria-label="${helpText[key] || ''}">?</span></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="bar-track"><div class="bar-fill" data-pct="${pct}"></div></div>
       <div class="breakdown-pct">${pct}%</div>
     `;
     container.appendChild(row);
   });
+  requestAnimationFrame(() => {
+    container.querySelectorAll(".bar-fill").forEach(el => { el.style.width = el.dataset.pct + "%"; });
+  });
+}
+
+function setScoreRing(score) {
+  const circumference = 2 * Math.PI * 24;
+  const arc = document.getElementById("score-arc");
+  const offset = circumference * (1 - score);
+  arc.style.strokeDasharray = circumference.toFixed(1);
+  requestAnimationFrame(() => { arc.style.transition = "stroke-dashoffset .6s ease"; arc.style.strokeDashoffset = offset.toFixed(1); });
+  document.getElementById("r-score").textContent = Math.round(score * 100) + "%";
 }
 
 function renderAlternatives(recommendations) {
   const card = document.getElementById("alternatives-card");
   const list = document.getElementById("alternatives-list");
-  if (!recommendations.length) {
-    card.style.display = "none";
-    return;
-  }
+  if (!recommendations.length) { card.style.display = "none"; return; }
+
   list.innerHTML = "";
-  recommendations.forEach(r => {
-    const row = document.createElement("div");
-    row.style.cssText = "display:flex; justify-content:space-between; align-items:center; " +
-      "padding:8px 0; border-bottom:1px solid var(--border); font-size:13px;";
-    row.innerHTML = `
-      <div>
-        <div style="font-weight:600;">${r.title}</div>
-        <div class="artist" style="font-size:12px;">${r.artist}</div>
+  recommendations.forEach((r, idx) => {
+    const wrap = document.createElement("div");
+    wrap.className = "alt-row";
+    const rowId = `alt-embed-${idx}`;
+    wrap.innerHTML = `
+      <div class="alt-row-main">
+        <div style="flex:1; min-width:0;">
+          <div class="alt-title">${escapeHtml(r.title)}</div>
+          <div class="alt-artist">${escapeHtml(r.artist)}</div>
+        </div>
+        <div class="alt-score">${Math.round(r.score * 100)}%</div>
+        <div class="alt-actions">
+          <button class="alt-btn play" data-target="${rowId}">▶ Play</button>
+          <button class="alt-btn queue" data-id="${r.track_id}" data-title="${escapeHtml(r.title)}" data-artist="${escapeHtml(r.artist)}">+ Queue</button>
+        </div>
       </div>
-      <div class="score-badge" style="font-size:14px;">${Math.round(r.score * 100)}%</div>
+      <div class="alt-embed" id="${rowId}"></div>
     `;
-    list.appendChild(row);
+    list.appendChild(wrap);
+
+    const playBtn = wrap.querySelector(".play");
+    const embedDiv = wrap.querySelector(".alt-embed");
+    playBtn.addEventListener("click", () => {
+      const isOpen = embedDiv.classList.contains("open");
+      // close any other open embeds so only one plays at a time
+      document.querySelectorAll(".alt-embed.open").forEach(el => el.classList.remove("open"));
+      document.querySelectorAll(".alt-btn.play.active").forEach(el => el.classList.remove("active"));
+      if (!isOpen) {
+        if (!embedDiv.dataset.loaded) {
+          renderPlayer(embedDiv, r.spotify_id, r.title, r.artist, true);
+          embedDiv.dataset.loaded = "1";
+        }
+        embedDiv.classList.add("open");
+        playBtn.classList.add("active");
+        playBtn.textContent = "■ Playing";
+      } else {
+        playBtn.textContent = "▶ Play";
+      }
+    });
+
+    wrap.querySelector(".queue").addEventListener("click", (e) => {
+      const btn = e.currentTarget;
+      if (queue.some(q => q.id === btn.dataset.id)) {
+        showError("That track is already in your listening order.");
+        return;
+      }
+      if (queue.length >= MAX_SEEDS) {
+        queue.shift(); // drop the oldest to make room, since this is now the most recent
+      }
+      queue.push({ id: btn.dataset.id, title: btn.dataset.title, artist: btn.dataset.artist });
+      renderQueue();
+      renderTracks(getCurrentTrackList());
+      btn.textContent = "✓ Added";
+      setTimeout(() => { btn.textContent = "+ Queue"; }, 1200);
+    });
   });
+
   card.style.display = "block";
 }
 
-let searchDebounceTimer = null;
- 
-document.getElementById("track-search").addEventListener("input", (e) => {
-  const query = e.target.value.trim();
-  clearTimeout(searchDebounceTimer);
- 
-  if (!query) {
-    document.getElementById("search-hint").style.display = "none";
-    renderTracks(allTracks);
-    return;
-  }
- 
-  searchDebounceTimer = setTimeout(async () => {
-    if (query.length < 2) return; // matches the API's 400 threshold
-    try {
-      const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
-      if (!res.ok) throw new Error("search failed");
-      const results = await res.json();
-      document.getElementById("search-hint").style.display = "block";
-      renderTracks(results);
-    } catch (err) {
-      // Fall back to filtering the already-loaded track list client-side
-      // if /search is unreachable, so the UI still works.
-      const q = query.toLowerCase();
-      const filtered = allTracks.filter(
-        t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q)
-      );
-      document.getElementById("search-hint").style.display = "block";
-      renderTracks(filtered);
-    }
-  }, 300); // debounce so we don't hit the API on every keystroke
-});
- 
-document.getElementById("clear-search").addEventListener("click", () => {
-  document.getElementById("track-search").value = "";
-  document.getElementById("search-hint").style.display = "none";
-  renderTracks(allTracks);
-});
+/* ---------- main request ---------- */
+document.getElementById("go").addEventListener("click", runRecommendation);
 
-document.getElementById("go").addEventListener("click", async () => {
+async function runRecommendation() {
   hideError();
-  if (selected.size === 0) {
-    showError("Pick at least one seed track first.");
+  if (queue.length === 0) {
+    showError("Add at least one track to your listening order first.");
     return;
   }
 
   const body = {
-    track_ids: Array.from(selected),
-    mood: document.getElementById("mood").value,
+    track_ids: queue.map(q => q.id),
+    mood: currentMood(),
     energy: parseFloat(document.getElementById("energy").value),
     novelty: parseFloat(document.getElementById("novelty").value),
     diversity: parseFloat(document.getElementById("diversity").value),
@@ -434,7 +709,7 @@ document.getElementById("go").addEventListener("click", async () => {
   const btn = document.getElementById("go");
   btn.disabled = true;
   btn.setAttribute("aria-busy", "true");
-  btn.textContent = "Thinking…";
+  btn.innerHTML = '<span class="spin"></span> Thinking…';
 
   try {
     const res = await fetch("/recommend", {
@@ -443,35 +718,33 @@ document.getElementById("go").addEventListener("click", async () => {
       body: JSON.stringify(body),
     });
     const data = await res.json();
- 
+
     if (!res.ok) {
-      if (res.status === 429) {
-        showError(data.error || "Too many requests -- please wait a moment and try again.");
-      } else {
-        showError(data.error || "Something went wrong.");
-      }
+      showError(data.error || (res.status === 429
+        ? "Too many requests — please wait a moment and try again."
+        : "Something went wrong."));
       document.getElementById("result-card").style.display = "none";
+      document.getElementById("alternatives-card").style.display = "none";
       return;
     }
 
+    lastResultTrackId = data.track_id;
     document.getElementById("r-title").textContent = data.title;
     document.getElementById("r-artist").textContent = data.artist;
-    document.getElementById("r-score").textContent = Math.round(data.score * 100) + "%";
     document.getElementById("r-reason").textContent = data.reason;
-    document.getElementById("r-tags").innerHTML = data.tags.map(t => `<span class="tag-chip">${t}</span>`).join(" ");
+    document.getElementById("r-tags").innerHTML = data.tags.map(t => `<span class="tag-chip">${escapeHtml(t)}</span>`).join(" ");
 
     const sourceChip = document.getElementById("r-source");
     const isReal = data.tag_source.startsWith("musicbrainz");
     sourceChip.textContent = isReal ? "real MusicBrainz tags" : "fallback tags";
     sourceChip.className = "source-chip " + (isReal ? "source-musicbrainz" : "source-fallback");
 
+    setScoreRing(data.score);
     renderBreakdown(data.breakdown);
-    renderPlayer(data.spotify_id, data.title, data.artist);
+    renderPlayer(document.getElementById("r-player"), data.spotify_id, data.title, data.artist, false);
+    document.getElementById("record-art").classList.add("spin-active");
     document.getElementById("result-card").style.display = "block";
- 
-    // Second call: /recommend/queue actually applies MMR diversification
-    // (unlike /recommend, which only ever returns one track and never
-    // runs MMR). This is what makes the diversity slider visible.
+
     try {
       const queueRes = await fetch("/recommend/queue", {
         method: "POST",
@@ -480,14 +753,9 @@ document.getElementById("go").addEventListener("click", async () => {
       });
       const queueData = await queueRes.json();
       if (queueRes.ok && queueData.recommendations) {
-        renderAlternatives(
-          queueData.recommendations.filter(r => r.track_id !== data.track_id)
-        );
-      } else if (queueRes.status === 429) {
+        renderAlternatives(queueData.recommendations.filter(r => r.track_id !== data.track_id));
+      } else {
         document.getElementById("alternatives-card").style.display = "none";
-        // Non-fatal: main recommendation above already succeeded, so
-        // just skip the alternatives silently rather than showing a
-        // second error banner on top of the main one.
       }
     } catch (err) {
       document.getElementById("alternatives-card").style.display = "none";
@@ -499,17 +767,10 @@ document.getElementById("go").addEventListener("click", async () => {
     btn.removeAttribute("aria-busy");
     btn.textContent = "Get next track";
   }
-});
+}
 
 loadTracks();
-
-document.getElementById("clear-selections").addEventListener("click", () => {
-  selected.clear();
-  document.querySelectorAll(".track-option.selected").forEach(el => {
-    el.classList.remove("selected");
-    el.setAttribute("aria-selected", "false");
-  });
-});
+renderQueue();
 </script>
 </body>
 </html>

@@ -25,6 +25,9 @@ import csv
 import json
 import sys
 import re
+import os
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
 
 CHUNK_ROWS = 200_000
 
@@ -84,7 +87,7 @@ def main():
 
             prev_key = tid if tid else prev_key
 
-    with open("transitions.json", "w", encoding="utf-8") as out:
+    with open(os.path.join(_HERE, "transitions.json"), "w", encoding="utf-8") as out:
         json.dump(transitions, out, indent=2, sort_keys=True)
 
     print(f"\nProcessed {rows_seen:,} rows total.")

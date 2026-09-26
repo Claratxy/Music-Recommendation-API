@@ -22,7 +22,7 @@ import os
 
 from track_catalog import TRACK_CATALOG, FALLBACK_TAGS, TRANSITION_COUNTS
 
-CACHE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "musicbrainz_cache.json")
+CACHE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "musicbrainz", "musicbrainz_cache.json")
 
 # musicbrainz_client.py caches the FULL filtered tag list for each track
 # (sometimes 10-20+ tags for heavily-tagged artists), not just the first

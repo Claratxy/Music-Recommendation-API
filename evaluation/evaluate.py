@@ -39,7 +39,7 @@ import itertools
 
 from data import TRACKS, TRACKS_BY_ID, TRANSITION_COUNTS
 from scorer import recommend_next_track, audio_similarity
-import weight_optimizer_fixed
+import weight_optimization.weight_optimizer_fixed as weight_optimizer_fixed
 
 random.seed(42)
 

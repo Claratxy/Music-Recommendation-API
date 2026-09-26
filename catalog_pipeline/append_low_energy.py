@@ -18,6 +18,10 @@ low_energy_additions.py both already exist):
 import importlib.util
 import json
 import re
+import os
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_ROOT = os.path.dirname(_HERE)
 
 
 def _load_module(path, name):
@@ -32,8 +36,8 @@ def _normalize_title(title):
 
 
 def main():
-    current = _load_module("track_catalog.py", "current_catalog")
-    additions = _load_module("low_energy_additions.py", "low_energy_additions")
+    current = _load_module(os.path.join(_ROOT, "track_catalog.py"), "current_catalog")
+    additions = _load_module(os.path.join(_HERE, "low_energy_additions.py"), "low_energy_additions")
 
     existing_catalog = list(current.TRACK_CATALOG)
     existing_fallback = dict(current.FALLBACK_TAGS)
@@ -67,7 +71,7 @@ def main():
             return repr(v)
         return json.dumps(v)
 
-    with open("track_catalog.py", "w", encoding="utf-8") as out:
+    with open(os.path.join(_ROOT, "track_catalog.py"), "w", encoding="utf-8") as out:
         out.write('"""\n')
         out.write("track_catalog.py\n")
         out.write("-----------------\n")
