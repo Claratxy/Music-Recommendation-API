@@ -55,6 +55,13 @@ Root-level files (`app.py`, `data.py`, `scorer.py`, `rate_limit_store.py`,
 project root deliberately. Everything else is either a one-off/offline
 script or reference material, grouped by purpose.
 
+## Frontend
+(assets/FindTracks.png) 
+(assets/Mood&ListingOrder.png) 
+(assets/NextTrack.png) 
+(assets/MoreLikeThis.png) 
+
+
 ## Quickstart
 
 ```bash
